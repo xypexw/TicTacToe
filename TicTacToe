@@ -48,7 +48,8 @@ public:
                     cout << "| ";
                 if (board[i] == Cell::None)
                 {
-                    cout << " ";
+                    COLOR(8);
+                    cout << i;
                 }
                 else if (board[i] == Cell::X)
                 {
@@ -157,7 +158,6 @@ public:
 
 class ComputerPlayer : public Player
 {
-private:
 public:
     ComputerPlayer(int _stt = 0) : Player(_stt){isComputer=true;}
     int Random_number(Board &board){
@@ -362,5 +362,3 @@ int main()
     Game TicTacToe;
     TicTacToe.run();
 }
-
-
