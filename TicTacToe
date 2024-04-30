@@ -1,13 +1,9 @@
 #include <iostream>
 #include <vector>
-#include <random>
-#include <ctime>
-#include <stdlib.h>
 #include <chrono>
 #include <thread>
 #include <windows.h>
 
-#define for(i, n) for (int i = 1; i <= n; i++)
 using namespace std;
 void time(int n) { this_thread::sleep_for(chrono::milliseconds(n)); } /// hàm dụng thời gian
 void COLOR(int color)                                                 /// hàm tạo màu sắc
@@ -43,7 +39,7 @@ public:
     {
         if (n)
         {
-            for (i, 9)
+            for (int i = 1; i <= 9; i++)
             {
                 COLOR(7);
                 if (i == 1)
@@ -79,7 +75,7 @@ public:
             cout << endl;
         }
         else
-            for (i, 9)
+            for (int i = 1; i <= 9; i++)
             {
                 COLOR(7);
                 if (i == 1)
@@ -108,13 +104,13 @@ public:
     Cell checkWinner()
     {
         /// kiểm tra dòng
-        for (i, 3)
+        for (int i = 1; i <= 3; i++)
         {
             if (board[i * 3 - 2] != Cell::None && board[i * 3 - 2] == board[i * 3 - 1] && board[i * 3 - 2] == board[i * 3])
                 return board[i * 3 - 2];
         }
         /// kiểm tra cột 
-        for (i, 3)
+        for (int i = 1; i <= 3; i++)
         {
             if (board[i] != Cell::None && board[i] == board[i + 3] && board[i] == board[i + 6])
                 return board[i];
@@ -126,7 +122,7 @@ public:
             return board[3];
        /// Kiểm tra xem có đang hòa hay không 
         bool ktDraw = true;
-        for (i, 9)
+        for (int i = 1; i <= 9; i++)
         {
             if (board[i] == Cell::None)
             {
@@ -151,9 +147,11 @@ class Player
 {
 protected:
     int stt;/// kt số thứ tự của người với máy
+    bool isComputer;
 public:
     /// ham thuan ao move quan li nuoc di
     Player(int _stt=0):stt(_stt){}
+    bool NotHuman(){return isComputer;}
     virtual void Move(Board &boa) = 0;
 };
 
@@ -161,15 +159,12 @@ class ComputerPlayer : public Player
 {
 private:
 public:
-    ComputerPlayer(int _stt = 0) : Player(_stt){}
-
-    // move cua may
-    void Move(Board &board)
-    {
+    ComputerPlayer(int _stt = 0) : Player(_stt){isComputer=true;}
+    int Random_number(Board &board){
         int chose;
         vector<int> ableMoves;
         /// Khởi tạo Vector chứa các ô đi được
-        for (i, 9)
+        for (int i = 1; i <= 9; i++)
         {
             if (board[i] == Board::Cell::None)
             {
@@ -179,13 +174,19 @@ public:
         /// Random nước đi
         int randomIndex = rand() % ableMoves.size();
         board.makeMove(ableMoves[randomIndex]);
-        chose = ableMoves[randomIndex];
+        chose = ableMoves[randomIndex];    
+        return chose;    
+    }
+    // move cua may
+    void Move(Board &board)
+    {
+        int number_chose=Random_number(board);
         ////Xuất ra màn hình
         COLOR(11);
         cout << "May ";
         if (stt)
             cout << stt << " ";
-        cout << "choi: " << chose << endl
+        cout << "choi: " << number_chose << endl
              << endl;
         board.drawBoard();
     }
@@ -196,18 +197,10 @@ class HumanPlayer : public Player
 private:
     string so;
 public:
-    HumanPlayer(int _stt = 0) : Player(_stt){}
+    HumanPlayer(int _stt = 0) : Player(_stt){isComputer=false;}
 
-    /// move của nguoi choi
-    void Move(Board &boa)
-    {
-        COLOR(4);
-        cout << "\nNguoi choi ";
-        if (stt)
-            cout << stt << " ";
-        cout << "nhap so (1-9): ";
-
-        /// Nhập số và kiểm tra tính hợp lệ của số và trình bày bảng
+    void Exception_Handling(Board &boa){
+                /// Nhập số và kiểm tra tính hợp lệ của số và trình bày bảng
         while (true)
         {
             cin >> so;
@@ -216,7 +209,7 @@ public:
             {
                 /// kiểm tra dữ liệu có phải là chữ không 
                 bool isDigit = true;
-                for (i, so.size() - 1)
+                for (int i = 1; i <so.size(); i++)
                     if (isalpha(so[i]))
                     {
                         isDigit = false;
@@ -245,6 +238,18 @@ public:
                 cout << "So khong hop le! Hay nhap lai: ";
         }
     }
+    /// move của nguoi choi
+    void Move(Board &boa)
+    {
+        COLOR(4);
+        cout << "\nNguoi choi ";
+        if (stt)
+            cout << stt << " ";
+        cout << "nhap so (1-9): ";
+
+        /// Nhập số và kiểm tra tính hợp lệ của số và trình bày bảng
+        Exception_Handling(boa);
+    }
 };
 
 class Game
@@ -252,20 +257,17 @@ class Game
 private:
     Board board;
     Player *s1, *s2;
+    string type;
 public:
     /// Hàm chạy chương trình
-    void run()
-    {
-        system("cls");        /// Xóa Màn Hình 
+    void Establish(){
+        cout << "\033[2J\033[1;1H";       /// Xóa Màn Hình 
         system("color E");    /// Màu Ban Đầu
-        srand(time(nullptr)); /// Thời Gian Thực
-
-        while (true)
-        {
-            string type;
-
+        // srand(time(nullptr)); /// Thời Gian Thực
+    }
+    void Chosetype(){
+        type="";
             ///Người dùng chọn chế độ muốn chơi
-            time(300);
             cout << "\t\t\t\t\tChao mung den voi game TICTACTOE!\n\nThe loai ban muon choi (1x1: Human vs Human || 1x0: Human vs Computer || 0x0: Computer vs Computer): ";
             while (true)
             {
@@ -275,43 +277,41 @@ public:
                 else
                     cout << "\nHay nhap lai: ";
             }
-
-            /// Bắt đầu game
-            cout << "\n\n--------------------------Game start-----------------------\n\n";
-            board.drawBoard(0);
-
-            ///  4 trường hợp cần khai báo khác nhau 
-            if (type == "1x1")
-            {
-                s1 = new HumanPlayer(1);
-                s2 = new HumanPlayer(2);
-            }
-            else if (type == "1x0")
-            {
-                s1 = new HumanPlayer();
-                s2 = new ComputerPlayer();
-            }
-            else if (type == "0x0")
-            {
-                s1 = new ComputerPlayer(1);
-                s2 = new ComputerPlayer(2);
-            }
-            /// Choi
-            while (!board.ktFinished())
+    }
+    void Updvariable(){
+        if (type == "1x1")
+        {
+            s1 = new HumanPlayer(1);
+            s2 = new HumanPlayer(2);
+        }
+        else if (type == "1x0")
+        {
+            s1 = new HumanPlayer();
+            s2 = new ComputerPlayer();
+        }
+        else if (type == "0x0")
+        {
+            s1 = new ComputerPlayer(1);
+            s2 = new ComputerPlayer(2);
+        }
+    }
+    void Play(){
+        while (!board.ktFinished())
             {
                 if (board.getvalueCell() == Board::Cell::X)
                 {
-                    time(800);
+                    if(s1->NotHuman()) time(700);
                     s1->Move(board);
                 }
                 else
                 {
-                    time(800);
+                    if(s2->NotHuman()) time(700);
                     s2->Move(board);
                 }
             }
-            /// Trình ra ai là người chiến thắng 
-            cout << "\n\n---------------------------Game End---------------------\n\n";
+    }
+    void printWinner(){
+                    cout << "\n\n---------------------------Game End---------------------\n\n";
             if (board.checkWinner() == Board::Cell::X)
                 cout << "\t\t\t   WINNER: X\n\n";
             else if (board.checkWinner() == Board::Cell::O)
@@ -319,8 +319,8 @@ public:
             else if (board.checkWinner() == Board::Cell::Draw)
                 cout << "\t\t\t   X DRAW O\n\n";
             board.drawBoard();
-            delete s1, s2;
-
+    }
+    bool Continue(){
             /// Hỏi người dùng muốn tiếp tục hay không 
             cout << "\n\n\t\tBan co muon choi nua khong? \n\t  Nhap 1 de tiep tuc, 0 de ket thuc: ";
             int a;
@@ -328,9 +328,32 @@ public:
             system("cls");
             if (!a)
             {
-                cout << "\n\n\t\t\tCam on quy khach da su dung dich vu TICTACTOE cua nhom WIBU \n\n";
-                break;
+                cout << "\n\n\t\t\tCam on quy khach da su dung dich vu TICTACTOE cua nhom WIBU \n\n"; 
+                return false;            
             }
+            return true;
+    }
+    void run()
+    {
+        Establish();
+        while (true)
+        {
+            Chosetype();
+            board=Board();
+            /// Bắt đầu game
+            cout << "\n\n--------------------------Game start-----------------------\n\n";
+            board.drawBoard(0);
+            ///Nâng cấp biến
+            Updvariable();
+            /// Choi
+            Play();
+            /// Trình ra ai là người chiến thắng 
+            printWinner();
+            delete s1, s2;
+
+            /// Hỏi người dùng muốn tiếp tục hay không 
+            bool kt=Continue();
+            if(!kt) break;
         }
     }
 };
@@ -339,4 +362,5 @@ int main()
     Game TicTacToe;
     TicTacToe.run();
 }
+
 
